@@ -58,6 +58,88 @@ const routes = {
   "/videos": "videos",
 };
 
+// Configuração de SEO por Rota
+const seoConfig = {
+  "/": {
+    title: "Início",
+    desc: "Organize suas finanças, tarefas e notas em um único lugar. Simples e gratuito.",
+  },
+  "/login": {
+    title: "Entrar",
+    desc: "Acesse sua conta no Se Organiza para gerenciar suas finanças.",
+  },
+  "/register": {
+    title: "Criar Conta",
+    desc: "Cadastre-se no Se Organiza e comece a controlar sua vida financeira.",
+  },
+  "/forgot-password": {
+    title: "Recuperar Senha",
+    desc: "Recupere o acesso à sua conta.",
+  },
+  "/dashboard": {
+    title: "Dashboard",
+    desc: "Visão geral das suas finanças, saldo e atividades recentes.",
+  },
+  "/finance": {
+    title: "Finanças",
+    desc: "Gerencie receitas, despesas e categorias financeiras.",
+  },
+  "/tasks": {
+    title: "Tarefas",
+    desc: "Quadro Kanban para organizar suas tarefas e pendências.",
+  },
+  "/notes": { title: "Notas", desc: "Suas anotações rápidas e ideias." },
+  "/admin": {
+    title: "Administração",
+    desc: "Painel de controle administrativo.",
+  },
+  "/about": { title: "Sobre", desc: "Saiba mais sobre o projeto Se Organiza." },
+  "/plans": {
+    title: "Planos Premium",
+    desc: "Conheça nossos planos e desbloqueie recursos exclusivos.",
+  },
+  "/terms": {
+    title: "Termos de Uso",
+    desc: "Termos e condições de uso do aplicativo.",
+  },
+  "/privacy": {
+    title: "Privacidade",
+    desc: "Política de privacidade e proteção de dados.",
+  },
+  "/profile": {
+    title: "Meu Perfil",
+    desc: "Gerencie seus dados pessoais e configurações.",
+  },
+  "/notifications": {
+    title: "Notificações",
+    desc: "Suas notificações e alertas do sistema.",
+  },
+  "/help": { title: "Ajuda", desc: "Central de ajuda e suporte." },
+  "/videos": {
+    title: "Vídeos e Dicas",
+    desc: "Conteúdos educativos sobre finanças e organização.",
+  },
+};
+
+function updateSEO(path) {
+  const config = seoConfig[path] || {
+    title: "App",
+    desc: "Se Organiza - Gestão Pessoal",
+  };
+
+  // Atualiza Título
+  document.title = `${config.title} | Se Organiza`;
+
+  // Atualiza Meta Description
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (!metaDesc) {
+    metaDesc = document.createElement("meta");
+    metaDesc.name = "description";
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.content = config.desc;
+}
+
 async function router() {
   const app = document.getElementById("app");
   let hash = window.location.hash.slice(1) || "/";
@@ -88,6 +170,9 @@ async function router() {
     window.location.hash = "/dashboard";
     return;
   }
+
+  // Atualiza SEO baseado na rota atual
+  updateSEO(hash);
 
   // Renderização
   app.innerHTML = ""; // Limpa o conteúdo anterior
