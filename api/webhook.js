@@ -7,8 +7,9 @@ if (!admin.apps.length) {
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       // Corrige a formatação da chave privada vinda de variáveis de ambiente
+      // Aceita tanto quebras de linha reais quanto literais '\n' (comum ao copiar de JSON)
       privateKey: process.env.FIREBASE_PRIVATE_KEY
-        ? process.env.FIREBASE_PRIVATE_KEY.replace(/\n/g, "\n")
+        ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
         : undefined,
     }),
   });
@@ -22,6 +23,7 @@ export default async function handler(req, res) {
   }
 
   const event = req.body;
+  console.log("Evento recebido:", event.event || event.type);
 
   try {
     // Verifica se o evento é de pagamento pago/concluído

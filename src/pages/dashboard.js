@@ -11,6 +11,7 @@ import {
   query,
   where,
   getDocs,
+  onSnapshot,
 } from "../services/firebase.js";
 import {
   getTransactions,
@@ -595,28 +596,34 @@ export function Dashboard() {
   };
 
   // --- Premium Check Logic ---
-  const checkPremiumStatus = async () => {
+  // Substituído por listener em tempo real (onSnapshot)
+  const setupPremiumListener = () => {
     if (!user) return;
-    try {
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const isPremium = userDoc.exists() && userDoc.data().isPremium;
 
-      if (!isPremium) {
-        // Show Header Button
+    // Escuta mudanças no documento do usuário em tempo real
+    const unsub = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const isPremium = data.isPremium;
         const headerBtn = element.querySelector("#header-premium-btn");
-        headerBtn.classList.remove("hidden");
-        headerBtn.onclick = () => (window.location.hash = "/plans");
-
-        // Show Banner
         const banner = element.querySelector("#premium-banner");
-        banner.classList.remove("hidden");
-        banner.onclick = () => (window.location.hash = "/plans");
+
+        if (isPremium) {
+          // Se virou Premium, esconde os banners imediatamente
+          if (headerBtn) headerBtn.classList.add("hidden");
+          if (banner) banner.classList.add("hidden");
+        } else {
+          // Se não é Premium, mostra
+          if (headerBtn) headerBtn.classList.remove("hidden");
+          if (headerBtn)
+            headerBtn.onclick = () => (window.location.hash = "/plans");
+          if (banner) banner.classList.remove("hidden");
+          if (banner) banner.onclick = () => (window.location.hash = "/plans");
+        }
       }
-    } catch (e) {
-      console.error(e);
-    }
+    });
   };
-  checkPremiumStatus();
+  setupPremiumListener();
 
   // Lógica de Logout
   element.querySelector("#logout-btn").addEventListener("click", async () => {
