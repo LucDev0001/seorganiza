@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     const response = await axios.post(
       "https://api.abacatepay.com/v1/billing/create",
       {
-        frequency: "MONTHLY",
+        frequency: "ONE_TIME",
         methods: ["PIX"],
         products: [
           {
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
             name: "Se Organiza Premium",
             quantity: 1,
             price: 999, // R$ 9,99
-            description: "Assinatura Mensal Se Organiza Premium",
+            description: "Mensalidade Se Organiza Premium (30 dias)",
           },
         ],
         returnUrl: `${BASE_URL}/#/dashboard?success=true`,

@@ -44,7 +44,7 @@ export function Dashboard() {
         }
 
         // 2. Injetar Botão de Admin se tiver permissão
-        if (data.role === "admin") {
+        if (data.isAdmin || data.role === "admin") {
           const adminBtn = document.createElement("button");
           adminBtn.className =
             "min-w-[80px] flex flex-col items-center gap-2 snap-center group";
