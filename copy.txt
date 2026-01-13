@@ -1,0 +1,21 @@
+🚀 Lançamento do Projeto: Se Organiza!
+
+Estou muito feliz em compartilhar meu mais novo projeto pessoal: o Se Organiza, uma aplicação PWA (Progressive Web App) completa para gestão financeira e produtividade pessoal.
+
+👨‍💻 O Desafio Técnico: Decidi fugir do óbvio e construir uma SPA (Single Page Application) robusta utilizando Vanilla JavaScript moderno, sem depender de frameworks de UI. O objetivo foi aprofundar meu conhecimento na manipulação do DOM, gerenciamento de estado e arquitetura de componentes.
+
+⚙️ Tech Stack & Funcionalidades:
+
+Frontend: JavaScript (ES6+), Tailwind CSS para estilização responsiva e Dark Mode nativo.
+Backend: Firebase (Authentication, Firestore e Hosting).
+PWA: Instalável no mobile/desktop com funcionamento offline.
+Features:
+📊 Gestão Financeira com gráficos (Chart.js) e metas.
+✅ Quadro Kanban para tarefas (Drag & Drop nativo).
+📝 Bloco de notas com categorização por cores.
+🎙️ Comandos de voz e Modo Zen para foco.
+O projeto foi uma excelente oportunidade para implementar padrões de segurança, como verificação de contas suspensas e logs de auditoria no painel administrativo.
+
+🔗 Link do projeto/Demo: [Insira seu link aqui] 📂 Repositório: [Insira link do GitHub]
+
+#Javascript #Firebase #PWA #WebDevelopment #TailwindCSS #OpenSource #Portfolio

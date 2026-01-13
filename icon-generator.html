@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gerador de Ícones PWA - Se Organiza</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 40px;
+        background: #f3f4f6;
+      }
+      h1 {
+        color: #1f2937;
+      }
+      .container {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      canvas {
+        border-radius: 20%;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        max-width: 100%;
+        height: auto;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #4f46e5;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background: #4338ca;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gerador de Ícones PWA</h1>
+    <p>
+      Estes ícones usam a cor do tema (#4F46E5). Clique para baixar e salve em
+      <code>public/icons/</code>.
+    </p>
+
+    <div class="container">
+      <div class="card">
+        <h3>192x192</h3>
+        <canvas id="c192" width="192" height="192"></canvas><br />
+        <a id="dl192" class="btn" download="icon-192x192.png">Baixar PNG</a>
+      </div>
+
+      <div class="card">
+        <h3>512x512</h3>
+        <canvas id="c512" width="512" height="512"></canvas><br />
+        <a id="dl512" class="btn" download="icon-512x512.png">Baixar PNG</a>
+      </div>
+    </div>
+
+    <script>
+      function drawIcon(canvasId, size, fontSize) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext("2d");
+
+        // Fundo com a cor do tema
+        ctx.fillStyle = "#4F46E5";
+        ctx.fillRect(0, 0, size, size);
+
+        // Ícone (Emoji de Carteira)
+        ctx.font = `${fontSize}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("💰", size / 2, size / 2); // Você pode trocar por 📊, ✅ ou 🚀
+      }
+
+      drawIcon("c192", 192, 100);
+      drawIcon("c512", 512, 280);
+
+      document.getElementById("dl192").onclick = function () {
+        this.href = document.getElementById("c192").toDataURL("image/png");
+      };
+      document.getElementById("dl512").onclick = function () {
+        this.href = document.getElementById("c512").toDataURL("image/png");
+      };
+    </script>
+  </body>
+</html>
