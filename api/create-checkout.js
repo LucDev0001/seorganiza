@@ -8,6 +8,10 @@ export default async function handler(req, res) {
   const { userId, email, name, taxId, cellphone } = req.body;
   const ABACATE_API_KEY = process.env.ABACATE_PAY_API_KEY;
 
+  // Define a URL base. Na Vercel, configure a variável de ambiente BASE_URL
+  // Exemplo de valor para BASE_URL: https://se-organiza.vercel.app
+  const BASE_URL = process.env.BASE_URL || "https://seorganiza.vercel.app";
+
   if (!userId || !email) {
     return res.status(400).json({ error: "Missing user data" });
   }
@@ -29,9 +33,8 @@ export default async function handler(req, res) {
             description: "Assinatura Mensal Se Organiza Premium",
           },
         ],
-        returnUrl: "https://seu-projeto.vercel.app/#/dashboard?success=true",
-        completionUrl:
-          "https://seu-projeto.vercel.app/#/dashboard?success=true",
+        returnUrl: `${BASE_URL}/#/dashboard?success=true`,
+        completionUrl: `${BASE_URL}/#/dashboard?success=true`,
         customer: {
           name: name || "Usuario Se Organiza",
           email: email,

@@ -164,6 +164,12 @@ onAuthStateChanged(auth, async (user) => {
       if (userDoc.exists()) {
         const data = userDoc.data();
 
+        // AUTO-CORREÇÃO ADMIN: Garante permissão no banco se o email bater
+        if (user.email === ADMIN_EMAIL && !data.isAdmin) {
+          await updateDoc(userDocRef, { isAdmin: true });
+          showToast("Permissões de administrador restauradas.", "success");
+        }
+
         // Lógica de Modo Demonstração (24h)
         let isDemoActive = false;
         if (data.demoActivatedAt) {
