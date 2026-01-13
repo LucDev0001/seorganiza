@@ -468,7 +468,7 @@ export function Profile() {
 
     try {
       await updateDoc(doc(db, "users", user.uid), {
-        phone: form.phone.value,
+        phone: form.phone.value.replace(/\D/g, ""),
         cpf: form.cpf.value.replace(/\D/g, ""),
         gender: form.gender.value,
       });

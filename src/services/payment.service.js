@@ -25,6 +25,9 @@ export async function startPremiumCheckout() {
         email: user.email,
         name: user.displayName,
         taxId: userData.cpf || "00000000000", // Envia o CPF ou fallback
+        cellphone: userData.phone
+          ? userData.phone.replace(/\D/g, "")
+          : "11999999999", // Envia telefone limpo ou fallback
       }),
     });
 
