@@ -24,25 +24,41 @@ export default async function handler(req, res) {
 
   const event = req.body;
   console.log("Evento recebido:", event.event || event.type);
+  // Log do payload completo para facilitar debug futuro
+  console.log("Payload:", JSON.stringify(event, null, 2));
 
   try {
     // Verifica se o evento é de pagamento pago/concluído
     // Verifique na doc do Abacate Pay o nome exato do evento (ex: 'billing.paid')
     if (event.event === "billing.paid" || event.status === "PAID") {
       const data = event.data || {};
-      const metadata = data.metadata || {};
+
+      // CORREÇÃO: Os dados estão dentro de 'billing' no payload recebido
+      const billingData = data.billing || data;
+
+      const metadata = billingData.metadata || {};
       let userId = metadata.userId;
 
       // Fallback: Busca por email se não houver userId (comum em renovações automáticas)
-      if (!userId && data.customer && data.customer.email) {
-        const usersQuery = await db
-          .collection("users")
-          .where("email", "==", data.customer.email)
-          .limit(1)
-          .get();
+      if (!userId) {
+        const customer = billingData.customer || {};
+        // O email pode estar direto em customer.email ou em customer.metadata.email
+        const customerEmail = customer.email || customer.metadata?.email;
 
-        if (!usersQuery.empty) {
-          userId = usersQuery.docs[0].id;
+        if (customerEmail) {
+          console.log(
+            `UserID não encontrado no metadata. Buscando por email: ${customerEmail}`
+          );
+          const usersQuery = await db
+            .collection("users")
+            .where("email", "==", customerEmail)
+            .limit(1)
+            .get();
+
+          if (!usersQuery.empty) {
+            userId = usersQuery.docs[0].id;
+            console.log(`Usuário encontrado por email: ${userId}`);
+          }
         }
       }
 
@@ -52,15 +68,25 @@ export default async function handler(req, res) {
         const endDate = new Date(paymentDate);
         endDate.setDate(endDate.getDate() + 30);
 
-        await db.collection("users").doc(userId).update({
-          isPremium: true,
-          premiumEndDate: endDate.toISOString(), // Data de expiração atualizada
-          lastPaymentDate: paymentDate.toISOString(),
-          paymentId: data.id,
-        });
+        // Usamos set com merge para evitar erros caso o documento não exista
+        await db
+          .collection("users")
+          .doc(userId)
+          .set(
+            {
+              isPremium: true,
+              premiumEndDate: endDate.toISOString(), // Data de expiração atualizada
+              lastPaymentDate: paymentDate.toISOString(),
+              paymentId: billingData.id || "unknown",
+            },
+            { merge: true }
+          );
+
         console.log(
           `Usuário ${userId} atualizado para Premium até ${endDate.toISOString()}.`
         );
+      } else {
+        console.warn("Usuário não identificado no webhook.");
       }
     }
 
