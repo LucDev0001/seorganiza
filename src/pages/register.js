@@ -298,18 +298,32 @@ export function Register() {
     const btnGoogle = element.querySelector("#btn-google-reg");
     if (btnGoogle) {
       btnGoogle.onclick = async () => {
+        // VERIFICAÇÃO DE SEGURANÇA: Google Auth não funciona em IP local (ex: 192.168.x.x) sem HTTPS
+        if (
+          window.location.hostname !== "localhost" &&
+          window.location.hostname !== "127.0.0.1" &&
+          window.location.protocol === "http:"
+        ) {
+          showToast(
+            "Google Login requer HTTPS ou localhost. Não funciona via IP local.",
+            "error"
+          );
+          return;
+        }
+
+        // Verifica se é PWA (Standalone) para usar Redirect
+        // Removemos a verificação genérica de Mobile para tentar Popup primeiro
         const isPwa =
           window.matchMedia("(display-mode: standalone)").matches ||
-          window.navigator.standalone ||
-          /Mobi|Android/i.test(navigator.userAgent);
+          window.navigator.standalone;
 
         if (isPwa) {
           try {
             await signInWithRedirect(auth, googleProvider);
             return;
           } catch (error) {
-            console.error(error);
-            showToast("Erro ao iniciar cadastro com Google.", "error");
+            console.error("Erro Redirect:", error);
+            showToast(`Erro ao iniciar Google: ${error.message}`, "error");
           }
         }
 
@@ -317,7 +331,7 @@ export function Register() {
           const result = await signInWithPopup(auth, googleProvider);
           await handleGoogleRegisterSuccess(result.user);
         } catch (error) {
-          console.error(error);
+          console.error("Erro Popup:", error);
           showToast("Erro ao cadastrar com Google.", "error");
         }
       };

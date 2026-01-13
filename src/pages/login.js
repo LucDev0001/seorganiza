@@ -169,11 +169,24 @@ export function Login() {
     // Lógica de Login com Google
     const btnGoogle = element.querySelector("#btn-google");
     btnGoogle.onclick = async () => {
-      // Verifica se é PWA (Standalone) ou Mobile para usar Redirect (mais confiável)
+      // VERIFICAÇÃO DE SEGURANÇA: Google Auth não funciona em IP local (ex: 192.168.x.x) sem HTTPS
+      if (
+        window.location.hostname !== "localhost" &&
+        window.location.hostname !== "127.0.0.1" &&
+        window.location.protocol === "http:"
+      ) {
+        showToast(
+          "Google Login requer HTTPS ou localhost. Não funciona via IP local.",
+          "error"
+        );
+        return;
+      }
+
+      // Verifica se é PWA (Standalone) para usar Redirect
+      // Removemos a verificação genérica de Mobile para tentar Popup primeiro (evita loop de redirect em alguns casos)
       const isPwa =
         window.matchMedia("(display-mode: standalone)").matches ||
-        window.navigator.standalone ||
-        /Mobi|Android/i.test(navigator.userAgent);
+        window.navigator.standalone;
 
       if (isPwa) {
         try {
@@ -181,7 +194,7 @@ export function Login() {
           return; // O redirecionamento ocorrerá, interrompe o fluxo aqui
         } catch (error) {
           console.error(error);
-          showToast("Erro ao iniciar login com Google.", "error");
+          showToast(`Erro no redirecionamento: ${error.message}`, "error");
         }
       }
 
@@ -190,8 +203,8 @@ export function Login() {
         const result = await signInWithPopup(auth, googleProvider);
         await handleGoogleLoginSuccess(result.user);
       } catch (error) {
-        console.error(error);
-        showToast("Erro ao entrar com Google.", "error");
+        console.error("Erro Popup:", error);
+        showToast("Erro ao entrar com Google. Tente novamente.", "error");
       }
     };
   };
