@@ -25,6 +25,21 @@ export async function startPremiumCheckout() {
 
     const data = await response.json();
 
+    // Se a resposta não for OK (ex: 500), lança o erro detalhado vindo da API
+    if (!response.ok) {
+      const msg =
+        data.details?.error ||
+        data.details?.message ||
+        JSON.stringify(data.details) ||
+        "Erro desconhecido";
+      // Limpa a mensagem se for um objeto JSON muito grande para o toast
+      const cleanMsg =
+        msg.length > 100
+          ? "Erro na validação dos dados (verifique o console)"
+          : msg;
+      throw new Error(cleanMsg);
+    }
+
     if (data.url) {
       // Redireciona para o checkout do Abacate Pay
       window.location.href = data.url;
@@ -33,6 +48,6 @@ export async function startPremiumCheckout() {
     }
   } catch (error) {
     console.error(error);
-    showToast("Erro ao iniciar pagamento. Tente novamente.", "error");
+    showToast(`Erro: ${error.message}`, "error");
   }
 }

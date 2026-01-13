@@ -52,7 +52,14 @@ export default async function handler(req, res) {
     // Retorna a URL de pagamento para o frontend redirecionar
     return res.status(200).json({ url: response.data.data.url });
   } catch (error) {
-    console.error("Erro Abacate Pay:", error.response?.data || error.message);
-    return res.status(500).json({ error: "Erro ao criar pagamento" });
+    // Captura a mensagem detalhada de erro do Abacate Pay ou do Axios
+    const errorDetails = error.response?.data || error.message;
+    console.error("Erro Abacate Pay:", JSON.stringify(errorDetails));
+
+    // Retorna o erro detalhado para o frontend para facilitar o debug
+    return res.status(500).json({
+      error: "Erro ao processar pagamento",
+      details: errorDetails,
+    });
   }
 }
