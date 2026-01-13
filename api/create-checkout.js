@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       "https://api.abacatepay.com/v1/billing/create",
       {
         frequency: "ONE_TIME",
-        methods: ["PIX", "CREDIT_CARD"],
+        methods: ["PIX"],
         products: [
           {
             externalId: "premium_plan",

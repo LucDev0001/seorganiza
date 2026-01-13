@@ -101,7 +101,7 @@ export function Plans() {
                 <button id="btn-subscribe" class="w-full py-3 px-4 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all transform hover:scale-[1.02]">
                     Quero ser Premium
                 </button>
-                <p class="text-xs text-center text-gray-400 mt-3">Pagamento seguro via Pix e Cartão</p>
+                <p class="text-xs text-center text-gray-400 mt-3">Pagamento seguro via Pix</p>
             </div>
         </div>
 
