@@ -8,6 +8,10 @@ import {
   getDoc,
   updateDoc,
   arrayUnion,
+  collection,
+  query,
+  where,
+  getDocs,
 } from "../services/firebase.js";
 
 export function Notifications() {
@@ -111,9 +115,22 @@ export function Notifications() {
         return tDate >= now && tDate <= threeDaysFromNow;
       });
 
-      const createCard = (id, title, msg, color) => `
+      // 3. Notificações do Sistema (Admin)
+      const sysNotifQuery = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid),
+        where("read", "==", false)
+      );
+      const sysNotifSnap = await getDocs(sysNotifQuery);
+      const sysNotifs = sysNotifSnap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+        isSystem: true,
+      }));
+
+      const createCard = (id, title, msg, color, isSystem = false) => `
             <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border-l-4 border-${color}-500 relative group">
-                <button class="mark-read-btn absolute top-2 right-2 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" data-id="${id}" title="Marcar como lida">
+                <button class="mark-read-btn absolute top-2 right-2 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" data-id="${id}" data-system="${isSystem}" title="Marcar como lida">
                     <i class="fas fa-check-double"></i>
                 </button>
                 <div class="flex justify-between items-start">
@@ -126,12 +143,28 @@ export function Notifications() {
 
       container.innerHTML = ""; // Clear skeletons
 
-      if (pendingTrans.length === 0 && pendingTasks.length === 0) {
+      if (
+        pendingTrans.length === 0 &&
+        pendingTasks.length === 0 &&
+        sysNotifs.length === 0
+      ) {
         container.innerHTML = `<div class="flex flex-col items-center justify-center py-10 text-center opacity-60">
               <i class="fas fa-bell-slash text-4xl text-gray-400 mb-3"></i>
               <p class="text-gray-500 dark:text-gray-400">Tudo limpo! Nenhuma notificação pendente.</p>
           </div>`;
       }
+
+      // Renderizar Notificações do Sistema Primeiro
+      sysNotifs.forEach(
+        (n) =>
+          (container.innerHTML += createCard(
+            n.id,
+            n.title,
+            n.message,
+            "purple",
+            true
+          ))
+      );
 
       pendingTrans.forEach(
         (t) =>
@@ -156,10 +189,16 @@ export function Notifications() {
       container.querySelectorAll(".mark-read-btn").forEach((btn) => {
         btn.onclick = async () => {
           const id = btn.dataset.id;
+          const isSystem = btn.dataset.system === "true";
+
           try {
-            await updateDoc(doc(db, "users", user.uid), {
-              readNotifications: arrayUnion(id),
-            });
+            if (isSystem) {
+              await updateDoc(doc(db, "notifications", id), { read: true });
+            } else {
+              await updateDoc(doc(db, "users", user.uid), {
+                readNotifications: arrayUnion(id),
+              });
+            }
             showToast("Notificação marcada como lida");
             loadNotifications();
             updateGlobalBadge();

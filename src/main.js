@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   updateDoc,
+  setDoc,
 } from "./services/firebase.js";
 import { Login } from "./pages/login.js";
 import { Register } from "./pages/register.js";
@@ -140,10 +141,25 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     initNotifications(user);
 
-    // Verificação de Assinatura Premium
+    // Verificação de Perfil e Assinatura
     try {
       const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
+      let userDoc = await getDoc(userDocRef);
+
+      // AUTO-CORREÇÃO: Se o usuário existe no Auth mas não no Firestore, cria agora.
+      if (!userDoc.exists()) {
+        console.log("Perfil não encontrado no Firestore. Criando...");
+        await setDoc(userDocRef, {
+          email: user.email,
+          displayName: user.displayName || user.email.split("@")[0],
+          photoURL: user.photoURL || null,
+          createdAt: new Date().toISOString(),
+          isPremium: false,
+          isAdmin: user.email === ADMIN_EMAIL, // Garante seu Admin se for seu email
+        });
+        userDoc = await getDoc(userDocRef); // Recarrega para usar abaixo
+        showToast("Perfil sincronizado com sucesso.", "success");
+      }
 
       if (userDoc.exists()) {
         const data = userDoc.data();

@@ -140,6 +140,36 @@ export function Finance() {
                     </div>
                 </div>
             </div>
+
+            <!-- Premium Upsell Modal -->
+            <div id="premium-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] backdrop-blur-sm p-4 fade-in">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative">
+                    <button id="close-premium-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white z-10 bg-black/20 rounded-full p-1 w-8 h-8 flex items-center justify-center transition-colors"><i class="fas fa-times"></i></button>
+                    
+                    <div class="h-32 bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+                        <i class="fas fa-crown text-6xl text-white/90 drop-shadow-lg transform -rotate-12"></i>
+                    </div>
+                    
+                    <div class="p-6 text-center">
+                        <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">Recurso Premium</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6 text-sm">A exportação para CSV e Excel é exclusiva para membros Premium. Organize-se como um profissional!</p>
+                        
+                        <ul class="text-left space-y-3 mb-8 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl">
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Categorias Ilimitadas</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Exportação de Dados (CSV)</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Suporte Prioritário</li>
+                        </ul>
+
+                        <button onclick="window.location.hash='/plans'" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all">
+                            Quero ser Premium por R$ 9,99
+                        </button>
+                        <button id="dismiss-premium" class="mt-3 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 underline">
+                            Continuar no plano grátis
+                        </button>
+                    </div>
+                </div>
+            </div>
         </main>
     `;
 
@@ -159,6 +189,18 @@ export function Finance() {
   const closeCatsModal = element.querySelector("#close-cats-modal");
   const addCatForm = element.querySelector("#add-cat-form");
   const catsList = element.querySelector("#cats-list");
+
+  // Premium Modal Logic
+  const premiumModal = element.querySelector("#premium-modal");
+  const closePremiumModal = () => {
+    premiumModal.classList.add("hidden");
+    premiumModal.classList.remove("flex");
+  };
+  element.querySelector("#close-premium-modal").onclick = closePremiumModal;
+  element.querySelector("#dismiss-premium").onclick = closePremiumModal;
+  premiumModal.onclick = (e) => {
+    if (e.target === premiumModal) closePremiumModal();
+  };
 
   // Populate Filters
   const months = [
@@ -209,7 +251,8 @@ export function Finance() {
       const isPremium = userDoc.exists() && userDoc.data().isPremium;
 
       if (!isPremium) {
-        showToast("Recurso exclusivo para Premium!", "error");
+        premiumModal.classList.remove("hidden");
+        premiumModal.classList.add("flex");
         return;
       }
 

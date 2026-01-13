@@ -18,15 +18,15 @@ export default async function handler(req, res) {
     const response = await axios.post(
       "https://api.abacatepay.com/v1/billing/create",
       {
-        frequency: "ONE_TIME", // ou 'MONTHLY' para assinatura
+        frequency: "MONTHLY",
         methods: ["PIX"],
         products: [
           {
             externalId: "premium_plan",
             name: "Se Organiza Premium",
             quantity: 1,
-            price: 2990, // R$ 29,90 (Exemplo em centavos)
-            description: "Acesso vitalício às funcionalidades Premium",
+            price: 999, // R$ 9,99
+            description: "Assinatura Mensal Se Organiza Premium",
           },
         ],
         returnUrl: "https://seu-projeto.vercel.app/#/dashboard?success=true",

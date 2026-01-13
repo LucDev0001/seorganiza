@@ -77,6 +77,9 @@ export function Dashboard() {
         <h1 class="text-xl font-bold text-gray-800 dark:text-white">Se Organiza</h1>
       </div>
       <div class="flex items-center gap-4">
+        <button id="header-premium-btn" class="hidden bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse hover:scale-105 transition-transform">
+            <i class="fas fa-crown mr-1"></i> PREMIUM
+        </button>
         <button id="voice-cmd-btn" class="text-gray-500 hover:text-indigo-600 transition-colors hidden sm:block" title="Comando de Voz">
             <i class="fas fa-microphone text-xl"></i>
         </button>
@@ -101,6 +104,25 @@ export function Dashboard() {
 
     <!-- Main Content -->
     <main class="flex-1 p-6 max-w-5xl mx-auto w-full overflow-y-auto">
+      
+      <!-- Premium Upsell Banner (Injected via JS if free) -->
+      <div id="premium-banner" class="hidden mb-8 bg-gray-900 dark:bg-gray-800 rounded-2xl p-1 shadow-xl overflow-hidden relative group cursor-pointer">
+          <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div class="relative bg-white dark:bg-gray-900 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white text-xl shadow-lg">
+                      <i class="fas fa-crown"></i>
+                  </div>
+                  <div>
+                      <h3 class="font-bold text-gray-900 dark:text-white">Desbloqueie o Poder Total!</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Categorias ilimitadas, exportação CSV e sem anúncios.</p>
+                  </div>
+              </div>
+              <button class="w-full sm:w-auto px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
+                  Virar Premium R$ 9,99
+              </button>
+          </div>
+      </div>
       
       <!-- Top Section: Greeting & Date Picker -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -571,6 +593,30 @@ export function Dashboard() {
       window.location.hash = "/notifications";
     }
   };
+
+  // --- Premium Check Logic ---
+  const checkPremiumStatus = async () => {
+    if (!user) return;
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const isPremium = userDoc.exists() && userDoc.data().isPremium;
+
+      if (!isPremium) {
+        // Show Header Button
+        const headerBtn = element.querySelector("#header-premium-btn");
+        headerBtn.classList.remove("hidden");
+        headerBtn.onclick = () => (window.location.hash = "/plans");
+
+        // Show Banner
+        const banner = element.querySelector("#premium-banner");
+        banner.classList.remove("hidden");
+        banner.onclick = () => (window.location.hash = "/plans");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  checkPremiumStatus();
 
   // Lógica de Logout
   element.querySelector("#logout-btn").addEventListener("click", async () => {

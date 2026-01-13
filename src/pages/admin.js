@@ -460,6 +460,9 @@ export function Admin() {
                         <button id="export-csv" class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800 whitespace-nowrap">
                             <i class="fas fa-file-csv mr-2"></i> Exportar
                         </button>
+                        <button id="send-notification-all" class="text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-4 py-2.5 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800 whitespace-nowrap">
+                            <i class="fas fa-paper-plane mr-2"></i> Notificar Todos
+                        </button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -513,6 +516,27 @@ export function Admin() {
                         <div class="flex justify-end gap-2 mt-4">
                             <button type="button" id="close-sub-modal" class="px-3 py-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded">Cancelar</button>
                             <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Notificação Global -->
+            <div id="notification-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-white">Enviar Notificação Global</h3>
+                    <form id="notification-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Título</label>
+                            <input type="text" name="title" required class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2 outline-none dark:text-white focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Mensagem</label>
+                            <textarea name="message" required rows="3" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2 outline-none dark:text-white focus:ring-2 focus:ring-purple-500"></textarea>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" id="close-notif-modal" class="px-3 py-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded">Cancelar</button>
+                            <button type="submit" class="px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700">Enviar para Todos</button>
                         </div>
                     </form>
                 </div>
@@ -576,6 +600,72 @@ export function Admin() {
         showToast("Erro ao salvar.", "error");
       }
     };
+
+    // --- Lógica do Modal de Notificação ---
+    const notifModal = element.querySelector("#notification-modal");
+    const notifForm = element.querySelector("#notification-form");
+    const sendNotifBtn = element.querySelector("#send-notification-all");
+    const closeNotifBtn = element.querySelector("#close-notif-modal");
+
+    if (sendNotifBtn) {
+      sendNotifBtn.onclick = () => {
+        notifModal.classList.remove("hidden");
+        notifModal.classList.add("flex");
+      };
+    }
+
+    if (closeNotifBtn) {
+      closeNotifBtn.onclick = () => {
+        notifModal.classList.add("hidden");
+        notifModal.classList.remove("flex");
+      };
+    }
+
+    if (notifForm) {
+      notifForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const title = notifForm.title.value;
+        const message = notifForm.message.value;
+        const btn = notifForm.querySelector("button[type='submit']");
+
+        btn.disabled = true;
+        btn.textContent = "Enviando...";
+
+        try {
+          // Cria uma notificação para cada usuário na coleção 'notifications'
+          const promises = usersList.map((user) => {
+            return addDoc(collection(db, "notifications"), {
+              userId: user.id,
+              title: title,
+              message: message,
+              date: new Date().toISOString(),
+              read: false,
+              type: "system", // Identificador para saber que veio do admin
+            });
+          });
+
+          await Promise.all(promises);
+          await logAction("SEND_GLOBAL_NOTIFICATION", "ALL", {
+            title,
+            count: usersList.length,
+          });
+
+          showToast(
+            `Notificação enviada para ${usersList.length} usuários!`,
+            "success"
+          );
+          notifForm.reset();
+          notifModal.classList.add("hidden");
+          notifModal.classList.remove("flex");
+        } catch (error) {
+          console.error("Erro ao enviar notificações:", error);
+          showToast("Erro ao enviar notificações.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Enviar para Todos";
+        }
+      };
+    }
 
     renderTableRows(usersList);
     setupDashboardListeners();
@@ -1172,12 +1262,6 @@ export function Admin() {
   const checkAuth = () => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Super Admin Bypass para seu ID
-        if (user.uid === "Z32Qc1LfgkTTUh0AfTi7f5ir0Go2") {
-          renderDashboard();
-          return;
-        }
-
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists() && userDoc.data().isAdmin) {

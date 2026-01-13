@@ -70,7 +70,7 @@ export function Plans() {
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Premium</h3>
                 <div class="flex items-baseline gap-1 mb-6">
-                    <span class="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400">R$ 9,90</span>
+                    <span class="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400">R$ 9,99</span>
                     <span class="text-gray-500">/mês</span>
                 </div>
                 <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Assinatura mensal. Cancele quando quiser.</p>

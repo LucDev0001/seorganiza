@@ -27,17 +27,38 @@ export default async function handler(req, res) {
     // Verifica se o evento é de pagamento pago/concluído
     // Verifique na doc do Abacate Pay o nome exato do evento (ex: 'billing.paid')
     if (event.event === "billing.paid" || event.status === "PAID") {
-      const metadata = event.data.metadata || {};
-      const userId = metadata.userId;
+      const data = event.data || {};
+      const metadata = data.metadata || {};
+      let userId = metadata.userId;
+
+      // Fallback: Busca por email se não houver userId (comum em renovações automáticas)
+      if (!userId && data.customer && data.customer.email) {
+        const usersQuery = await db
+          .collection("users")
+          .where("email", "==", data.customer.email)
+          .limit(1)
+          .get();
+
+        if (!usersQuery.empty) {
+          userId = usersQuery.docs[0].id;
+        }
+      }
 
       if (userId) {
-        // Atualiza o usuário no Firestore para Premium
+        // Calcula validade (30 dias a partir do pagamento)
+        const paymentDate = new Date();
+        const endDate = new Date(paymentDate);
+        endDate.setDate(endDate.getDate() + 30);
+
         await db.collection("users").doc(userId).update({
           isPremium: true,
-          premiumSince: new Date().toISOString(),
-          paymentId: event.data.id,
+          premiumEndDate: endDate.toISOString(), // Data de expiração atualizada
+          lastPaymentDate: paymentDate.toISOString(),
+          paymentId: data.id,
         });
-        console.log(`Usuário ${userId} atualizado para Premium.`);
+        console.log(
+          `Usuário ${userId} atualizado para Premium até ${endDate.toISOString()}.`
+        );
       }
     }
 
