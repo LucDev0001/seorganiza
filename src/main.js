@@ -143,73 +143,74 @@ function updateSEO(path) {
 async function router() {
   const app = document.getElementById("app");
   let hash = window.location.hash.slice(1) || "/";
+  const path = hash.split("?")[0]; // Ignora query params (ex: ?success=true)
 
   // Proteção de Rotas
   if (
     !state.user &&
-    hash !== "/login" &&
-    hash !== "/" &&
-    hash !== "/terms" &&
-    hash !== "/privacy" &&
-    hash !== "/register" &&
-    hash !== "/forgot-password"
+    path !== "/login" &&
+    path !== "/" &&
+    path !== "/terms" &&
+    path !== "/privacy" &&
+    path !== "/register" &&
+    path !== "/forgot-password"
   ) {
     window.location.hash = "/"; // Redireciona para Landing se tentar acessar rota protegida sem logar
     return;
   }
 
   // Redirecionamento se logado
-  if (state.user && (hash === "/login" || hash === "/")) {
+  if (state.user && (path === "/login" || path === "/")) {
     window.location.hash = "/dashboard";
     return;
   }
 
   // Proteção Admin
-  if (hash === "/admin" && !state.isAdmin) {
+  if (path === "/admin" && !state.isAdmin) {
     console.warn("Acesso negado: Apenas administradores.");
     window.location.hash = "/dashboard";
     return;
   }
 
   // Atualiza SEO baseado na rota atual
-  updateSEO(hash);
+  updateSEO(path);
 
   // Renderização
   app.innerHTML = ""; // Limpa o conteúdo anterior
 
-  if (hash === "/") {
+  if (path === "/") {
     app.appendChild(Landing());
-  } else if (hash === "/login") {
+  } else if (path === "/login") {
     app.appendChild(Login());
-  } else if (hash === "/register") {
+  } else if (path === "/register") {
     app.appendChild(Register());
-  } else if (hash === "/forgot-password") {
+  } else if (path === "/forgot-password") {
     app.appendChild(ForgotPassword());
-  } else if (hash === "/dashboard") {
+  } else if (path === "/dashboard") {
     app.appendChild(Dashboard());
-  } else if (hash === "/tasks") {
+  } else if (path === "/tasks") {
     app.appendChild(Tasks());
-  } else if (hash === "/finance") {
+  } else if (path === "/finance") {
     app.appendChild(Finance());
-  } else if (hash === "/admin") {
+  } else if (path === "/admin") {
     app.appendChild(Admin());
-  } else if (hash === "/notes") {
+  } else if (path === "/notes") {
     app.appendChild(Notes());
-  } else if (hash === "/about") {
+  } else if (path === "/about") {
     app.appendChild(About());
-  } else if (hash === "/plans") {
+  } else if (path === "/plans") {
     app.appendChild(Plans());
-  } else if (hash === "/terms") {
+  } else if (path === "/terms") {
     app.appendChild(Terms());
-  } else if (hash === "/privacy") {
+  } else if (path === "/privacy") {
     app.appendChild(Privacy());
-  } else if (hash === "/profile") {
+  } else if (path === "/profile") {
     app.appendChild(Profile());
-  } else if (hash === "/notifications") {
+  } else if (path === "/notifications") {
     app.appendChild(Notifications());
-  } else if (hash === "/help") {
+  } else if (path === "/help") {
     app.appendChild(Help());
-  } else if (hash === "/videos") {
+  } else if (path === "/videos") {
     app.appendChild(Videos());
   } else {
     app.appendChild(NotFound());

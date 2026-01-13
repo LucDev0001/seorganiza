@@ -4,6 +4,8 @@ const STATIC_ASSETS = [
   "./",
   "./index.html",
   "./public/manifest.json",
+  "./public/icons/icon-192x192.png",
+  "./public/icons/icon-512x512.png",
   // Adicione aqui seus arquivos CSS/JS principais se não usar bundler
   // Ex: './src/main.js', './assets/style.css'
 ];
@@ -38,10 +40,20 @@ self.addEventListener("activate", (event) => {
 
 // Interceptação de Requisições
 self.addEventListener("fetch", (event) => {
-  // Ignora requisições de outros domínios (opcional, dependendo da sua estratégia)
+  // 1. Ignora requisições que não são GET (POST, PUT, DELETE, etc.)
+  if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+
+  // 2. Ignora requisições para a API (não queremos cachear respostas da API)
+  if (url.pathname.startsWith("/api/")) return;
+
+  // 3. Ignora requisições de outros domínios que NÃO sejam CDNs essenciais
   if (
-    !event.request.url.startsWith(self.location.origin) &&
-    !event.request.url.includes("cdn")
+    !url.origin.startsWith(self.location.origin) &&
+    !url.href.includes("cdn") &&
+    !url.href.includes("gstatic") &&
+    !url.href.includes("googleapis")
   )
     return;
 
@@ -62,10 +74,12 @@ self.addEventListener("fetch", (event) => {
       const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
           // Verifica se a resposta é válida antes de cachear
+          // Aceitamos 'basic' (mesma origem) e 'cors' (CDNs)
           if (
             networkResponse &&
             networkResponse.status === 200 &&
-            networkResponse.type === "basic"
+            (networkResponse.type === "basic" ||
+              networkResponse.type === "cors")
           ) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
