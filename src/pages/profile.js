@@ -121,6 +121,10 @@ export function Profile() {
                 </h3>
                 <form id="profile-form" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">CPF</label>
+                            <input type="text" name="cpf" id="cpf" maxlength="14" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="000.000.000-00">
+                        </div>
                         <div>
                             <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">WhatsApp / Celular</label>
                             <input type="tel" name="phone" id="phone" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
@@ -240,6 +244,13 @@ export function Profile() {
       if (docSnap.exists()) {
         form.phone.value = data.phone || "";
         form.gender.value = data.gender || "";
+        // Formata o CPF ao carregar
+        if (data.cpf) {
+          form.cpf.value = data.cpf.replace(
+            /(\d{3})(\d{3})(\d{3})(\d{2})/,
+            "$1.$2.$3-$4"
+          );
+        }
 
         // Restore content structure (re-bind elements if needed, but here we just update values on the form which is outside the skeleton replacement if we were careful, but since we replaced innerHTML of profile-card, we need to restore it first or update logic.
         // Better approach: Update the DOM elements directly after fetching, removing skeleton class if used, or swap content.
@@ -364,6 +375,17 @@ export function Profile() {
 
   loadProfile();
 
+  // Máscara de CPF no Perfil
+  const cpfInput = element.querySelector("#cpf");
+  cpfInput.addEventListener("input", (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 11) value = value.slice(0, 11);
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    e.target.value = value;
+  });
+
   // Lógica de Upload de Foto (Delegação de Eventos)
   element.addEventListener("click", (e) => {
     if (e.target.closest("#profile-image-trigger")) {
@@ -437,6 +459,7 @@ export function Profile() {
     try {
       await updateDoc(doc(db, "users", user.uid), {
         phone: form.phone.value,
+        cpf: form.cpf.value.replace(/\D/g, ""),
         gender: form.gender.value,
       });
       msg.textContent = "Perfil atualizado com sucesso!";

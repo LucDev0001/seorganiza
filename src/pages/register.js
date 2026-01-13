@@ -13,6 +13,26 @@ import {
 } from "../services/firebase.js";
 import { showToast } from "../utils/ui.js";
 
+function isValidCPF(cpf) {
+  if (typeof cpf !== "string") return false;
+  cpf = cpf.replace(/[^\d]+/g, "");
+  if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
+  let soma = 0;
+  let resto;
+  for (let i = 1; i <= 9; i++)
+    soma = soma + parseInt(cpf.substring(i - 1, i)) * (11 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.substring(9, 10))) return false;
+  soma = 0;
+  for (let i = 1; i <= 10; i++)
+    soma = soma + parseInt(cpf.substring(i - 1, i)) * (12 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.substring(10, 11))) return false;
+  return true;
+}
+
 export function Register() {
   const element = document.createElement("div");
   element.className =
@@ -76,6 +96,28 @@ export function Register() {
                             <input id="name" name="name" type="text" required 
                                 class="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white transition-all" 
                                 placeholder="Seu nome">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="cpf" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CPF</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-id-card text-gray-400"></i>
+                            </div>
+                            <input id="cpf" name="cpf" type="text" required maxlength="14"
+                                class="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white transition-all" 
+                                placeholder="000.000.000-00">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Celular / WhatsApp</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-gray-400"></i>
+                            </div>
+                            <input id="phone" name="phone" type="tel" required maxlength="15"
+                                class="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white transition-all" 
+                                placeholder="(00) 00000-0000">
                         </div>
                     </div>
                     <div>
@@ -166,16 +208,44 @@ export function Register() {
       }"></i>`;
     };
 
+    // Máscara de CPF
+    const cpfInput = element.querySelector("#cpf");
+    cpfInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/\D/g, "");
+      if (value.length > 11) value = value.slice(0, 11);
+      value = value.replace(/(\d{3})(\d)/, "$1.$2");
+      value = value.replace(/(\d{3})(\d)/, "$1.$2");
+      value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      e.target.value = value;
+    });
+
+    // Máscara de Telefone
+    const phoneInput = element.querySelector("#phone");
+    phoneInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/\D/g, "");
+      if (value.length > 11) value = value.slice(0, 11);
+      value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
+      value = value.replace(/(\d)(\d{4})$/, "$1-$2");
+      e.target.value = value;
+    });
+
     const form = element.querySelector("#register-form");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const name = form.name.value;
+      const cpf = form.cpf.value.replace(/\D/g, ""); // Salva apenas números
+      const phone = form.phone.value.replace(/\D/g, "");
       const email = form.email.value;
       const password = form.password.value;
       const confirmPassword = form["confirm-password"].value;
 
       if (!form.terms.checked) {
         showToast("Você deve aceitar os termos para continuar.", "error");
+        return;
+      }
+
+      if (!isValidCPF(cpf)) {
+        showToast("CPF inválido. Verifique os números.", "error");
         return;
       }
 
@@ -199,6 +269,8 @@ export function Register() {
           await setDoc(doc(db, "users", user.uid), {
             email: user.email,
             displayName: name,
+            cpf: cpf,
+            phone: phone,
             createdAt: new Date().toISOString(),
             isPremium: false,
           });

@@ -1,4 +1,4 @@
-import { auth } from "./firebase.js";
+import { auth, db, doc, getDoc } from "./firebase.js";
 import { showToast } from "../utils/ui.js";
 
 export async function startPremiumCheckout() {
@@ -11,6 +11,10 @@ export async function startPremiumCheckout() {
   try {
     showToast("Gerando link de pagamento...", "info");
 
+    // Busca dados completos do usuário (incluindo CPF)
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const userData = userDoc.exists() ? userDoc.data() : {};
+
     const response = await fetch("/api/create-checkout", {
       method: "POST",
       headers: {
@@ -20,6 +24,7 @@ export async function startPremiumCheckout() {
         userId: user.uid,
         email: user.email,
         name: user.displayName,
+        taxId: userData.cpf || "00000000000", // Envia o CPF ou fallback
       }),
     });
 

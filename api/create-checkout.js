@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { userId, email, name } = req.body;
+  const { userId, email, name, taxId } = req.body;
   const ABACATE_API_KEY = process.env.ABACATE_PAY_API_KEY;
 
   if (!userId || !email) {
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
         customer: {
           name: name || "Usuario Se Organiza",
           email: email,
-          taxId: "00000000000", // Opcional ou coletar do usuário se for obrigatório
+          taxId: taxId || "00000000000",
         },
         // IMPORTANTE: Passamos o userId como metadata para recuperar no webhook
         metadata: {
