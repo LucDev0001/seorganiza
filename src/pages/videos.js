@@ -46,7 +46,7 @@ export function Videos() {
             <div class="w-full max-w-4xl relative">
                 <button id="close-video-modal" class="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl p-2"><i class="fas fa-times"></i></button>
                 <div class="relative pt-[56.25%] bg-black rounded-xl overflow-hidden shadow-2xl">
-                    <iframe id="video-frame" class="absolute inset-0 w-full h-full" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <iframe id="video-frame" class="absolute inset-0 w-full h-full" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>
         </div>
