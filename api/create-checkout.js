@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       },
       {
         headers: {
-          Authorization: `Bearer `,
+          Authorization: `Bearer ${ABACATE_API_KEY}`,
         },
       }
     );

@@ -1,11 +1,13 @@
 {
   "name": "se-organiza",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "start": "serve ."
   },
   "dependencies": {
     "axios": "^1.6.0",
-    "firebase-admin": "^11.11.0"
+    "firebase-admin": "^11.11.0",
+    "serve": "^14.2.0"
   }
 }
